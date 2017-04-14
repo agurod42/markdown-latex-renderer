@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
-import * as os from 'os';
 import * as path from 'path';
 import * as request from 'request-light';
 import * as vscode from 'vscode';
@@ -118,7 +117,7 @@ export class MarkdownLaTeXRenderer {
                 let expressionImageUrlPreffix = (this.getConfiguration('imagesUrlPreffix', '') + '/').replace(/^\//, '').replace(/\/\/$/, '\/');
                 let expressionImageUrl = expressionImageUrlPreffix + this.renderFolderRelative + '/' + expression.getImageFileName();
                 let expressionImageEncodedUrl = expressionImageUrl.replace(/\s/g, '%20').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + os.EOL + '![](' + expressionImageEncodedUrl + ')';
+                let imageHtmlCode = '<!--$$' + expression.getText() + '$$--> ![](' + expressionImageEncodedUrl + ')';
                 
                 edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
 
