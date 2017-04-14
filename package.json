@@ -40,6 +40,10 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agurz/Markdown-LaTeX-Renderer.git"
+  },
   "devDependencies": {
     "typescript": "^2.2.2",
     "vscode": "^1.0.0",
