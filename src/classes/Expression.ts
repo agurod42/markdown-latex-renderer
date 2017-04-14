@@ -6,10 +6,13 @@ export class Expression {
 
     private text: string;
     private position: vscode.Position;
+    
+    private firstRender: boolean;
 
-    constructor(text: string, position: vscode.Position) {
+    constructor(text: string, position: vscode.Position, firstRender: boolean = false) {
         this.text = text;
-        this.position = position;   
+        this.position = position;
+        this.firstRender = firstRender;
     }
 
     public getImageFileName(): string {
@@ -30,6 +33,10 @@ export class Expression {
 
     public getEndingPosition(): vscode.Position {
         return this.getStartingPosition().translate(0, this.getTextWithDollarSigns().length);
+    }
+
+    public isFirstRender() {
+        return this.firstRender;
     }
 
 }

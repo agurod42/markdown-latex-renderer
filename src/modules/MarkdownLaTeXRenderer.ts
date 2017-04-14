@@ -57,8 +57,11 @@ export class MarkdownLaTeXRenderer {
         let regExp = /\$\$([\s\S]*?)\$\$/g;
         let text = editor.document.getText();
         
+        this.expressions = [];
+
         while (match = regExp.exec(text)) {
-            this.expressions.push(new Expression(match[1], editor.document.positionAt(match.index)));
+            let isExpressionCommented = text.substr(match.index - 4, 4) == '<!--';
+            this.expressions.push(new Expression(match[1], editor.document.positionAt(match.index), !isExpressionCommented));
         }
     }
 
@@ -119,7 +122,15 @@ export class MarkdownLaTeXRenderer {
                 let expressionImageEncodedUrl = expressionImageUrl.replace(/\s/g, '%20').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
                 let imageHtmlCode = '<!--$$' + expression.getText() + '$$--> ![](' + expressionImageEncodedUrl + ')';
                 
-                edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
+                if (expression.isFirstRender()) {
+                    edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
+                }
+                else {
+                    let expressionToEditStartingPosition = expression.getStartingPosition().translate(0, -4);
+                    let expressionToEditEndingIndex = editor.document.getText().indexOf('.svg)', editor.document.offsetAt(expressionToEditStartingPosition)) + 5;
+                    let expressionToEditEndingPosition = editor.document.positionAt(expressionToEditEndingIndex);
+                    edit.replace(new vscode.Range(expressionToEditStartingPosition, expressionToEditEndingPosition), imageHtmlCode);
+                }
 
             });
         });
