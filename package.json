@@ -21,7 +21,18 @@
         "command": "extension.renderLaTeX",
         "title": "Markdown: Render LaTeX expressions"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Markdown LaTeX Renderer configuration",
+      "properties": {
+        "markdownLaTeXRenderer.imagesFolderName": {
+          "type": "string",
+          "default": "images",
+          "description": "Folder name where LaTeX expression images are going to be stored"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",

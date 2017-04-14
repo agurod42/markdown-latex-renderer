@@ -26,7 +26,8 @@ export class MarkdownLaTeXRenderer {
         if (editor.document.languageId != "markdown") return showErrorMessage('Markdown LaTeX Renderer can only run on markdown files');
 
         let editorDocumentFolder = path.posix.dirname(editor.document.fileName);
-        this.renderFolderRelative = path.posix.relative(workspace.rootPath, editorDocumentFolder) + '/images/LaTeX';
+        let imagesFolderName = workspace.getConfiguration('markdownLaTeXRenderer').get('imagesFolderName', 'images');
+        this.renderFolderRelative = path.posix.relative(workspace.rootPath, editorDocumentFolder) + '/' + imagesFolderName + '/LaTeX';
         this.renderFolder = path.normalize(workspace.rootPath + '/' + this.renderFolderRelative);
         this.createRenderFolderIfNotExists();
 
