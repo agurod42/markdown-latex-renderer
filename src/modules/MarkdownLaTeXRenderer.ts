@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as request from 'request-light';
 import * as vscode from 'vscode';
+import { Expression } from '../classes/Expression';
 
 const editor = vscode.window.activeTextEditor;
 const workspace = vscode.workspace;
@@ -12,10 +13,12 @@ export class MarkdownLaTeXRenderer {
     private renderFolder: string;
     private renderFolderRelative: string;
 
+    private expressions: Array<Expression> = [];
+
     constructor() {
     }
 
-    public renderLaTeX() {
+    public async renderLaTeX() {
         
         if (!workspace.rootPath) return showErrorMessage('Markdown LaTeX Renderer can\'t run on `undefined` workspace');
         if (editor.document.languageId != "markdown") return showErrorMessage('Markdown LaTeX Renderer can only run on markdown files');
@@ -24,15 +27,10 @@ export class MarkdownLaTeXRenderer {
         this.renderFolder = workspace.rootPath + '/' + this.renderFolderRelative;
         this.createRenderFolderIfNotExists();
 
-        editor.edit(edit => {
-            let match;
-            let regExp = /\$\$([\s\S]*?)\$\$/g;
-            let text = editor.document.getText();
-            
-            while (match = regExp.exec(text)) {
-                this.renderExpression(edit, match[1], match.index, match[0].length);
-            }
-        });
+        this.findExpressions();
+        await this.downloadExpressions();
+        this.renderExpressions();
+
     }
 
     private createRenderFolderIfNotExists() {
@@ -41,28 +39,58 @@ export class MarkdownLaTeXRenderer {
         }
     }
 
-    private renderExpression(edit: vscode.TextEditorEdit, expression: string, startIndex: number, length: number) {
-        var expressionImagePath = this.renderFolder + '/' + expression.trim() + '.svg';
-
-        if (fs.existsSync(expressionImagePath)) {
-            this.replaceExpressionWithImage(edit, expression, startIndex, length);
-        }
-        else {
-            this.downloadExpressionImageWithCallback(expression, () => {
-                this.renderExpression(edit, expression, startIndex, length);                
-            });
+    private findExpressions() {
+        let match;
+        let regExp = /\$\$([\s\S]*?)\$\$/g;
+        let text = editor.document.getText();
+        
+        while (match = regExp.exec(text)) {
+            this.expressions.push(new Expression(match[1], editor.document.positionAt(match.index)));
         }
     }
 
-    private downloadExpressionImageWithCallback(expression: string, callback: Function) {
-        let expressionImagePath = this.renderFolder + '/' + expression.trim() + '.svg';
+    private downloadExpressions() {
+        return new Promise(resolve => {
 
+            let cachedExpressions = 0;
+            let downloadedExpressions = 0;
+
+            this.expressions.forEach(expression => {
+                let expressionImagePath = this.renderFolder + '/' + expression.getImageFileName();
+
+                if (fs.existsSync(expressionImagePath)) {
+                    cachedExpressions++;
+                }
+                else {
+                    this.downloadExpressionImageWithCallback(expression, () => {
+                        downloadedExpressions++;
+
+                        if (cachedExpressions + downloadedExpressions == this.expressions.length) {
+                            resolve();
+                        }
+                    })
+                }
+            });
+
+            if (cachedExpressions + downloadedExpressions == this.expressions.length) {
+                resolve();
+            }
+
+        });
+    }
+
+    private downloadExpressionImageWithCallback(expression: Expression, callback: Function) {
+        let expressionImagePath = this.renderFolder + '/' + expression.getImageFileName();
+
+        console.log('downloading ' + expression.getText() + '...');
         request
             .xhr({url: RENDERER_SERVICE_URL + expression})
             .then(res => {
                 if (res.status == 200) {
+                    console.log('expression ' + expression.getText() + ' downloaded');
                     fs.writeFile(expressionImagePath, res.responseText, err => {
-                        callback();
+                        if (err) console.log(err);
+                        else callback(err);
                     });
                 }
                 else {
@@ -70,14 +98,18 @@ export class MarkdownLaTeXRenderer {
                 }
             });
     }
-    
-    private replaceExpressionWithImage(edit: vscode.TextEditorEdit, expression: string, startIndex: number, length: number) {
-        let expressionImageRelativePath = this.renderFolderRelative + '/' + expression.trim() + '.svg';
-        
-        let position = editor.document.positionAt(startIndex);
-        let value = '<!--$$' + expression + '$$-->' + '<img src="' + expressionImageRelativePath + '" />';
 
-        edit.replace(new vscode.Range(position, position.translate(0, length)), value);
+    private renderExpressions() {
+        editor.edit(edit => {
+            this.expressions.forEach(expression => {
+
+                let expressionImageRelativePath = this.renderFolderRelative + '/' + expression.getImageFileName();
+                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + '<img src="' + expressionImageRelativePath + '" />';
+                
+                edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
+
+            });
+        });
     }
 
 }
