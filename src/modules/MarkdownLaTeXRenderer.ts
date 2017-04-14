@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import * as mkdirp from 'mkdirp';
+import * as path from 'path';
 import * as request from 'request-light';
 import * as vscode from 'vscode';
 import { Expression } from '../classes/Expression';
@@ -23,8 +25,9 @@ export class MarkdownLaTeXRenderer {
         if (!workspace.rootPath) return showErrorMessage('Markdown LaTeX Renderer can\'t run on `undefined` workspace');
         if (editor.document.languageId != "markdown") return showErrorMessage('Markdown LaTeX Renderer can only run on markdown files');
 
-        this.renderFolderRelative = 'images/LaTeX';
-        this.renderFolder = workspace.rootPath + '/' + this.renderFolderRelative;
+        let editorDocumentFolder = path.posix.dirname(editor.document.fileName);
+        this.renderFolderRelative = path.posix.relative(workspace.rootPath, editorDocumentFolder) + '/images/LaTeX';
+        this.renderFolder = path.normalize(workspace.rootPath + '/' + this.renderFolderRelative);
         this.createRenderFolderIfNotExists();
 
         this.findExpressions();
@@ -35,7 +38,9 @@ export class MarkdownLaTeXRenderer {
 
     private createRenderFolderIfNotExists() {
         if (!fs.existsSync(this.renderFolder)) {
-            fs.mkdirSync(this.renderFolder);
+            mkdirp(this.renderFolder, err => {
+                if (err) showErrorMessage(err.message);
+            });
         }
     }
 
@@ -82,14 +87,12 @@ export class MarkdownLaTeXRenderer {
     private downloadExpressionImageWithCallback(expression: Expression, callback: Function) {
         let expressionImagePath = this.renderFolder + '/' + expression.getImageFileName();
 
-        console.log('downloading ' + expression.getText() + '...');
         request
             .xhr({url: RENDERER_SERVICE_URL + expression})
             .then(res => {
                 if (res.status == 200) {
-                    console.log('expression ' + expression.getText() + ' downloaded');
                     fs.writeFile(expressionImagePath, res.responseText, err => {
-                        if (err) console.log(err);
+                        if (err) showErrorMessage(err.message);
                         else callback(err);
                     });
                 }

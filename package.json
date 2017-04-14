@@ -37,6 +37,7 @@
     "@types/mocha": "^2.2.40"
   },
   "dependencies": {
+    "mkdirp": "^0.5.1",
     "request-light": "^0.2.0",
     "sanitize-filename": "^1.6.1"
   }
