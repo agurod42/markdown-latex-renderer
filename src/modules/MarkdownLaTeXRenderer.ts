@@ -109,7 +109,7 @@ export class MarkdownLaTeXRenderer {
             this.expressions.forEach(expression => {
 
                 let expressionImageRelativePath = this.renderFolderRelative + '/' + expression.getImageFileName();
-                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + '<img src="' + expressionImageRelativePath + '" />';
+                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + '![](' + expressionImageRelativePath + ')';
                 
                 edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
 
