@@ -8,27 +8,33 @@ import { Expression } from '../classes/Expression';
 
 const editor = vscode.window.activeTextEditor;
 const workspace = vscode.workspace;
+const window = vscode.window;
 
 const RENDERER_SERVICE_URL = 'https://latex.codecogs.com/svg.latex?';
 
 export class MarkdownLaTeXRenderer {
 
+    private configuration;
     private renderFolder: string;
     private renderFolderRelative: string;
 
     private expressions: Array<Expression> = [];
 
     constructor() {
+
+        if (!workspace.rootPath) window.showErrorMessage('Markdown LaTeX Renderer can\'t run on `undefined` workspace');
+        if (editor.document.languageId != "markdown") window.showErrorMessage('Markdown LaTeX Renderer can only run on markdown files');
+        
+        let configurationFilePath = workspace.rootPath + '/.vscode/markdownLaTeXRenderer.json';
+        if (fs.existsSync(configurationFilePath)) this.configuration = JSON.parse(fs.readFileSync(configurationFilePath, 'utf8'));
+
     }
 
     public async renderLaTeX() {
-        
-        if (!workspace.rootPath) return showErrorMessage('Markdown LaTeX Renderer can\'t run on `undefined` workspace');
-        if (editor.document.languageId != "markdown") return showErrorMessage('Markdown LaTeX Renderer can only run on markdown files');
 
         let editorDocumentFolder = path.posix.dirname(editor.document.fileName);
         let editorDocumentRelativePath = path.posix.relative(workspace.rootPath, editorDocumentFolder);
-        let imagesFolderName = workspace.getConfiguration('markdownLaTeXRenderer').get('imagesFolderName', 'images');
+        let imagesFolderName = this.getConfiguration('imagesFolderName', 'images');
         this.renderFolderRelative = (editorDocumentRelativePath.length ? editorDocumentRelativePath + '/' : '') + imagesFolderName + '/LaTeX';
         this.renderFolder = path.normalize(workspace.rootPath + '/' + this.renderFolderRelative);
         this.createRenderFolderIfNotExists();
@@ -42,7 +48,7 @@ export class MarkdownLaTeXRenderer {
     private createRenderFolderIfNotExists() {
         if (!fs.existsSync(this.renderFolder)) {
             mkdirp(this.renderFolder, err => {
-                if (err) showErrorMessage(err.message);
+                if (err) window.showErrorMessage(err.message);
             });
         }
     }
@@ -95,7 +101,7 @@ export class MarkdownLaTeXRenderer {
             .then(res => {
                 if (res.status == 200) {
                     fs.writeFile(expressionImagePath, res.responseText, err => {
-                        if (err) showErrorMessage(err.message);
+                        if (err) window.showErrorMessage(err.message);
                         else callback(err);
                     });
                 }
@@ -109,8 +115,10 @@ export class MarkdownLaTeXRenderer {
         editor.edit(edit => {
             this.expressions.forEach(expression => {
 
-                let expressionImageRelativeUrl = encodeURIComponent(this.renderFolderRelative + '/' + expression.getImageFileName());
-                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + os.EOL + '![](' + expressionImageRelativeUrl + ')';
+                let expressionImageUrlPreffix = (this.getConfiguration('imagesUrlPreffix', '') + '/').replace(/^\//, '').replace(/\/\/$/, '\/');
+                let expressionImageUrl = expressionImageUrlPreffix + this.renderFolderRelative + '/' + expression.getImageFileName();
+                let expressionImageEncodedUrl = expressionImageUrl.replace(/\s/g, '%20').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + os.EOL + '![](' + expressionImageEncodedUrl + ')';
                 
                 edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
 
@@ -118,8 +126,13 @@ export class MarkdownLaTeXRenderer {
         });
     }
 
-}
+    private getConfiguration(key: string, defaultValue: string = '') {
+        if (this.configuration && this.configuration[key]) {
+            return this.configuration[key];
+        }
+        else {
+            return defaultValue;
+        }
+    }
 
-function showErrorMessage(message: string) {
-    vscode.window.showErrorMessage(message);
 }
