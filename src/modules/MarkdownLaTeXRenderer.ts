@@ -90,7 +90,7 @@ export class MarkdownLaTeXRenderer {
         let expressionImagePath = this.renderFolder + '/' + expression.getImageFileName();
 
         request
-            .xhr({url: RENDERER_SERVICE_URL + expression})
+            .xhr({url: RENDERER_SERVICE_URL + expression.getText()})
             .then(res => {
                 if (res.status == 200) {
                     fs.writeFile(expressionImagePath, res.responseText, err => {
