@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
+import * as os from 'os';
 import * as path from 'path';
 import * as request from 'request-light';
 import * as vscode from 'vscode';
@@ -108,8 +109,8 @@ export class MarkdownLaTeXRenderer {
         editor.edit(edit => {
             this.expressions.forEach(expression => {
 
-                let expressionImageRelativePath = this.renderFolderRelative + '/' + expression.getImageFileName();
-                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + '![](' + expressionImageRelativePath + ')';
+                let expressionImageRelativeUrl = encodeURIComponent(this.renderFolderRelative + '/' + expression.getImageFileName());
+                let imageHtmlCode = '<!--$$' + expression.getText() + '$$-->' + os.EOL + '![](' + expressionImageRelativeUrl + ')';
                 
                 edit.replace(new vscode.Range(expression.getStartingPosition(), expression.getEndingPosition()), imageHtmlCode);
 
