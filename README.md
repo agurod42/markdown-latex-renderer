@@ -2,6 +2,8 @@
 
 Markdown LaTeX Renderer is a VSCode Extension to convert Markdown files' LaTeX expressions into SVG images on-the-fly.
 
+![](.doc/README.gif)
+
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
