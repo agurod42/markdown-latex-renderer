@@ -21,5 +21,5 @@ Lorem ipsum...
 
 &#36;&#36; \mathbb{A} = { a, b, c, d, e, f} &#36;&#36;
 
-<!--$$ \mathbb{A} = { a, b, c, d, e, f} $$--> 
+<!--$$ \mathbb{A} = \{ a, b, c, d, e, f\} $$--> 
 ![](https://rawgit.com/agurz/Markdown-LaTeX-Renderer/master/example/images/LaTeX/9a1cfd37b68a6fc294359f596c1691ee.svg)
