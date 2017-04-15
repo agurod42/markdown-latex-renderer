@@ -3,6 +3,9 @@
     "files.exclude": {
         "out": false // set this to true to hide the "out" folder with the compiled JS files
     },
+    "markdown.styles": [
+        "https://gitcdn.xyz/repo/aui/vs-code-github-markdown-theme/master/index.css"
+    ],
     "search.exclude": {
         "out": true // set this to false to include "out" folder in search results
     }
