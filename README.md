@@ -1,6 +1,6 @@
 # Markdown LaTeX Renderer
 
-Markdown LaTeX Renderer is a VSCode Extension to convert LaTeX expressions into SVG images on-the-fly on Markdown files.
+Markdown LaTeX Renderer is a VSCode Extension to convert Markdown files' LaTeX expressions into SVG images on-the-fly.
 
 ## Features
 
