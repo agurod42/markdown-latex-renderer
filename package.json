@@ -41,8 +41,8 @@
     "@types/mocha": "^2.2.40"
   },
   "dependencies": {
+    "md5": "^2.2.1",
     "mkdirp": "^0.5.1",
-    "request-light": "^0.2.0",
-    "sanitize-filename": "^1.6.1"
+    "request-light": "^0.2.0"
   }
 }

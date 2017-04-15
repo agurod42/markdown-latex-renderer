@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as md5 from 'md5';
 import * as sanitizeFilename from 'sanitize-filename';
 import * as vscode from 'vscode';
 
@@ -16,7 +17,7 @@ export class Expression {
     }
 
     public getImageFileName(): string {
-        return sanitizeFilename(this.getText().trim()) + '.svg';
+        return md5(this.getText().trim()) + '.svg';
     }
 
     public getText(): string {
