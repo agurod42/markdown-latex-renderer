@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/agurz/Markdown-LaTeX-Renderer.git"
+    "url": "git+https://github.com/agurz/markdown-latex-renderer.git"
   },
   "devDependencies": {
     "typescript": "^2.2.2",
