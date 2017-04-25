@@ -15,5 +15,5 @@ Create a `markdownLaTeXRenderer.json` file in your `.vscode` folder as follows:
 }
 ```
 
-* **imagesFolderName**: Folder where SVG images will be stored. This folder is relative to .md document
-* **imagesUrlPreffix**: String to prepend to image path (The image path is relative to .md document
+* **imagesFolderName**: Name of the folder where SVG images will be stored. This folder is relative to .md document
+* **imagesUrlPreffix**: String to prepend to SVG image's path (The image path is relative to .md document)
